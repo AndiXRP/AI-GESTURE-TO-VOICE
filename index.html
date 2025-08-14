@@ -1,0 +1,1749 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sistem Asisten AI Nasional/Enterprise</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: #f9fafb;
+      min-height: 100vh;
+      padding: 32px;
+      display: flex;
+      gap: 32px;
+      color: #1f2937;
+    }
+
+    .container {
+      display: flex;
+      gap: 32px;
+      width: 100%;
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+
+    #left { 
+      position: relative; 
+      flex: 1;
+      max-width: 720px;
+    }
+
+    .video-container {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      background: #fff;
+      border: 1px solid #e5e7eb;
+    }
+
+    video { display: none; }
+    
+    canvas { 
+      width: 100%; 
+      height: auto;
+      display: block;
+      background: #fff; 
+    }
+
+    .overlay-info {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: rgba(255,255,255,0.95);
+      color: #4b5563;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      max-width: calc(100% - 32px);
+    }
+
+    .gesture-display {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(255,255,255,0.95);
+      color: #1f2937;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      min-width: 140px;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .gesture-display.active {
+      background: #f0fdf4;
+      color: #047857;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    #controls { 
+      width: 480px;
+      background: #fff;
+      border-radius: 8px;
+      padding: 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      height: fit-content;
+      overflow-y: auto;
+      max-height: 90vh;
+      border: 1px solid #e5e7eb;
+    }
+
+    h2 {
+      color: #111827;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 24px;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    button, select, input, textarea { 
+      width: 100%; 
+      padding: 12px 16px; 
+      margin-top: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      background: #fff;
+    }
+
+    button {
+      cursor: pointer;
+      color: #fff;
+      background: #1d4ed8;
+      border: none;
+    }
+
+    button:hover {
+      background: #1e40af;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-success {
+      background: #047857;
+    }
+
+    .btn-success:hover {
+      background: #065f46;
+    }
+
+    .btn-warning {
+      background: #d97706;
+    }
+
+    .btn-warning:hover {
+      background: #b45309;
+    }
+
+    .btn-danger {
+      background: #b91c1c;
+    }
+
+    .btn-danger:hover {
+      background: #991b1b;
+    }
+
+    .btn-chat {
+      background: #0ea5e9;
+    }
+
+    .btn-chat:hover {
+      background: #0284c7;
+    }
+
+    .btn-clear {
+      background: #6b7280;
+    }
+
+    .btn-clear:hover {
+      background: #4b5563;
+    }
+
+    .gesture-library {
+      margin: 24px 0;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .gesture-library h3 {
+      color: #111827;
+      margin-bottom: 12px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .gesture-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      margin: 8px 0;
+      background: #fff;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      font-size: 13px;
+      transition: all 0.2s ease;
+    }
+
+    .gesture-item.detected {
+      border-color: #047857;
+      background: #f0fdf4;
+    }
+
+    .gesture-emoji {
+      font-size: 18px;
+      margin-right: 8px;
+    }
+
+    .gesture-name {
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .gesture-desc {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    .drowsiness-monitor {
+      margin: 24px 0;
+      padding: 16px;
+      background: #fef2f2;
+      border-radius: 6px;
+      border: 1px solid #fecaca;
+    }
+
+    .drowsiness-monitor h4 {
+      color: #b91c1c;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+    }
+
+    .drowsy-indicator {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 8px 0;
+    }
+
+    .drowsy-level {
+      width: 100%;
+      height: 8px;
+      background: #fecaca;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 0 12px;
+    }
+
+    .drowsy-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #047857 0%, #d97706 50%, #b91c1c 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .drowsy-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .drowsy-stat {
+      background: #fff;
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 12px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .drowsy-stat-value {
+      font-weight: 600;
+      color: #111827;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 12px;
+    }
+
+    .status {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: 500;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      font-size: 14px;
+    }
+
+    .status.warning {
+      background: #fefce8;
+      border-color: #fde68a;
+      color: #854d0e;
+    }
+
+    .status.success {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+      color: #065f46;
+    }
+
+    .status.danger {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #991b1b;
+    }
+
+    .voice-controls {
+      margin-top: 16px;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .voice-controls h4 {
+      margin-bottom: 12px;
+      color: #111827;
+      font-size: 14px;
+    }
+
+    .slider-container {
+      margin: 8px 0;
+    }
+
+    .slider-container label {
+      font-size: 12px;
+      color: #4b5563;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    input[type="range"] {
+      margin: 0;
+    }
+
+    .drowsiness-alert {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(185, 28, 28, 0.95);
+      color: #fff;
+      padding: 24px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 18px;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      text-align: center;
+      animation: alertPulse 1s infinite;
+    }
+
+    @keyframes alertPulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.05); }
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .feature-item {
+      padding: 8px 12px;
+      background: #f9fafb;
+      border-radius: 6px;
+      font-size: 12px;
+      text-align: center;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border: 1px solid #e5e7eb;
+    }
+
+    .feature-item.active {
+      background: #f0fdf4;
+      color: #047857;
+      border-color: #bbf7d0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .detecting {
+      animation: pulse 2s infinite;
+    }
+
+    @media (max-width: 1024px) {
+      body { flex-direction: column; padding: 16px; }
+      .container { flex-direction: column; }
+      #controls { width: 100%; max-width: none; padding: 24px; }
+    }
+
+    .confidence-bar {
+      margin-top: 12px;
+    }
+
+    .confidence-fill {
+      height: 6px;
+      background: linear-gradient(90deg, #b91c1c 0%, #d97706 50%, #047857 100%);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    .admin-section {
+      margin-top: 24px;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .admin-section h4 {
+      color: #111827;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .log-list {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      padding: 8px;
+    }
+
+    .log-item {
+      padding: 8px;
+      background: #fff;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      border: 1px solid #e5e7eb;
+      word-break: break-all;
+    }
+
+    #exportBtn {
+      background: #1d4ed8;
+    }
+
+    .chat-section {
+      margin-top: 24px;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .chat-section h4 {
+      color: #111827;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .chat-transcript {
+      max-height: 240px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      padding: 12px;
+      background: #fff;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      font-size: 13px;
+    }
+
+    .chat-transcript p {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .chat-transcript .user {
+      color: #1d4ed8;
+      font-weight: 600;
+    }
+
+    .chat-transcript .assistant {
+      color: #047857;
+    }
+
+    .chat-transcript .timestamp {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .mic-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: #9ca3af;
+      border-radius: 50%;
+      margin-right: 8px;
+      transition: background 0.3s ease;
+    }
+
+    .mic-indicator.active {
+      background: #047857;
+      animation: micPulse 1.5s infinite;
+    }
+
+    @keyframes micPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="left">
+      <div class="video-container">
+        <video id="video" playsinline></video>
+        <canvas id="overlay" width="640" height="480"></canvas>
+        <div class="overlay-info" id="overlayInfo">
+          Menginisialisasi sistem AI...
+        </div>
+        <div class="gesture-display" id="gestureDisplay">
+          Tidak Ada Gerakan
+        </div>
+        <div id="drowsinessAlert" class="drowsiness-alert" style="display: none;">
+          ⚠️ PERINGATAN KANTUK!<br>
+          <span style="font-size: 14px;">Silakan istirahat sejenak</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="controls">
+      <h2>Sistem Asisten AI Profesional</h2>
+      <div class="subtitle">
+        Asisten AI untuk komunikasi inklusif dan monitoring di institusi negara atau perusahaan besar. Mendukung pengenalan suara, bahasa isyarat, pengenalan wajah, dan deteksi kantuk dengan logging terenkripsi.
+      </div>
+
+      <button id="enableAudioBtn" class="btn-warning">🔊 Aktifkan Audio</button>
+      <button id="testVoiceBtn">🎵 Uji Suara</button>
+      <button id="startChatBtn" class="btn-chat"><span class="mic-indicator"></span>Aktifkan Obrolan Suara</button>
+      <button id="clearChatBtn" class="btn-clear">🗑️ Hapus Riwayat Obrolan</button>
+
+      <button id="startBtn" class="btn-success">▶️ Mulai Deteksi</button>
+      <button id="stopBtn" class="btn-danger" disabled>⏹️ Hentikan Deteksi</button>
+
+      <div class="feature-grid">
+        <div class="feature-item" id="handDetection">🤟 Bahasa Isyarat</div>
+        <div class="feature-item" id="faceDetection">😴 Deteksi Kantuk</div>
+        <div class="feature-item" id="voiceResponse">🗣️ Respons Suara</div>
+        <div class="feature-item" id="realTimeProcessing">⚡ Pemrosesan Real-time</div>
+        <div class="feature-item" id="loggingFeature">📊 Logging & Laporan</div>
+        <div class="feature-item" id="apiIntegration">🔗 Integrasi API</div>
+        <div class="feature-item" id="voiceChat">🎙️ Obrolan Suara</div>
+        <div class="feature-item" id="faceRecognition">👤 Pengenalan Wajah</div>
+      </div>
+
+      <div class="chat-section">
+        <h4><span class="mic-indicator" id="micIndicator"></span>Obrolan Suara</h4>
+        <div class="chat-transcript" id="chatTranscript"></div>
+        <div style="font-size: 12px; color: #6b7280; margin-top: 8px;">
+          Data suara dienkripsi untuk privasi. Ucapkan "Hai AI" untuk memulai pertanyaan.
+        </div>
+      </div>
+
+      <div class="gesture-library">
+        <h3>🤟 Perpustakaan Bahasa Isyarat</h3>
+        <div class="gesture-item" data-gesture="Open_Palm">
+          <div><span class="gesture-emoji">👋</span><span class="gesture-name">Salam</span><br><span class="gesture-desc">Telapak terbuka</span></div>
+        </div>
+        <div class="gesture-item" data-gesture="Thumbs_Up">
+          <div><span class="gesture-emoji">👍</span><span class="gesture-name">Setuju</span><br><span class="gesture-desc">Jempol ke atas</span></div>
+        </div>
+        <div class="gesture-item" data-gesture="Thumbs_Down">
+          <div><span class="gesture-emoji">👎</span><span class="gesture-name">Tidak Setuju</span><br><span class="gesture-desc">Jempol ke bawah</span></div>
+        </div>
+        <div class="gesture-item" data-gesture="Peace_Sign">
+          <div><span class="gesture-emoji">✌️</span><span class="gesture-name">Peace</span><br><span class="gesture-desc">Dua jari V</span></div>
+        </div>
+        <div class="gesture-item" data-gesture="OK_Sign">
+          <div><span class="gesture-emoji">👌</span><span class="gesture-name">OK</span><br><span class="gesture-desc">Lingkaran jari</span></div>
+        </div>
+        <div class="gesture-item" data-gesture="Fist">
+          <div><span class="gesture-emoji">✊</span><span class="gesture-name">Stop</span><br><span class="gesture-desc">Kepalan tangan</span></div>
+        </div>
+        <div class="gesture-item" data-gesture="Stop_Hand">
+          <div><span class="gesture-emoji">🤚</span><span class="gesture-name">Tunggu</span><br><span class="gesture-desc">Telapak menghadap</span></div>
+        </div>
+        <div class="gesture-item" data-gesture="Clap">
+          <div><span class="gesture-emoji">👏</span><span class="gesture-name">Terima Kasih</span><br><span class="gesture-desc">Kedua tangan bertemu</span></div>
+        </div>
+        <div class="gesture-item" data-gesture="Prayer">
+          <div><span class="gesture-emoji">🙏</span><span class="gesture-name">Mohon Maaf</span><br><span class="gesture-desc">Kedua tangan berdoa</span></div>
+        </div>
+        <div class="gesture-item" data-gesture="Point_Up">
+          <div><span class="gesture-emoji">☝️</span><span class="gesture-name">Perhatian</span><br><span class="gesture-desc">Satu jari ke atas</span></div>
+        </div>
+        <div class="gesture-item" data-gesture="Rock_Sign">
+          <div><span class="gesture-emoji">🤘</span><span class="gesture-name">Rock</span><br><span class="gesture-desc">Jari telunjuk dan kelingking</span></div>
+        </div>
+        <div class="gesture-item" data-gesture="Call_Me">
+          <div><span class="gesture-emoji">🤙</span><span class="gesture-name">Hubungi Saya</span><br><span class="gesture-desc">Telapak dengan jempol dan kelingking</span></div>
+        </div>
+      </div>
+
+      <div class="drowsiness-monitor">
+        <h4>😴 Monitor Kantuk</h4>
+        <div class="drowsy-indicator">
+          <span style="font-size: 12px;">Tingkat Kantuk:</span>
+          <div class="drowsy-level">
+            <div class="drowsy-fill" id="drowsyFill"></div>
+          </div>
+          <span id="drowsyPercent">0%</span>
+        </div>
+        <div class="drowsy-stats">
+          <div class="drowsy-stat">
+            <div class="drowsy-stat-value" id="eyeClosureValue">0</div>
+            <div>Eye Closure</div>
+          </div>
+          <div class="drowsy-stat">
+            <div class="drowsy-stat-value" id="headPoseValue">Normal</div>
+            <div>Head Pose</div>
+          </div>
+          <div class="drowsy-stat">
+            <div class="drowsy-stat-value" id="alertnessValue">Tinggi</div>
+            <div>Alertness</div>
+          </div>
+          <div class="drowsy-stat">
+            <div class="drowsy-stat-value" id="yawnValue">0</div>
+            <div>Yawn Count</div>
+          </div>
+          <div class="drowsy-stat">
+            <div class="drowsy-stat-value" id="blinkValue">0</div>
+            <div>Blink Rate</div>
+          </div>
+          <div class="drowsy-stat">
+            <div class="drowsy-stat-value" id="perclosValue">0%</div>
+            <div>PERCLOS</div>
+          </div>
+        </div>
+        <div style="font-size: 12px; color: #6b7280; margin-top: 8px;">
+          Analisis real-time berdasarkan EAR, MAR, posisi kepala, dan PERCLOS untuk deteksi kantuk akurat.
+        </div>
+      </div>
+
+      <div class="voice-controls">
+        <h4>🎛️ Pengaturan Suara</h4>
+        <div class="slider-container">
+          <label>Kecepatan Bicara:</label>
+          <input type="range" id="speechRate" min="0.5" max="1.5" step="0.1" value="1">
+        </div>
+        <div class="slider-container">
+          <label>Nada Suara:</label>
+          <input type="range" id="speechPitch" min="0.5" max="1.5" step="0.1" value="1">
+        </div>
+        <div class="slider-container">
+          <label>Volume:</label>
+          <input type="range" id="speechVolume" min="0.1" max="1" step="0.1" value="0.8">
+        </div>
+      </div>
+
+      <textarea id="mapping" rows="12" placeholder="Konfigurasi respon bahasa isyarat...">Open_Palm=Halo, salam hangat dari tim kami.
+Thumbs_Up=Saya setuju dengan usulan tersebut.
+Thumbs_Down=Saya kurang setuju, mari diskusikan lebih lanjut.
+Peace_Sign=Semoga damai dan produktif.
+OK_Sign=Baik, saya paham.
+Fist=Mohon hentikan sejenak.
+Stop_Hand=Harap tunggu sebentar.
+Clap=Terima kasih atas kerja sama Anda.
+Prayer=Mohon maaf atas ketidaknyamanan.
+Point_Up=Perhatian, ada informasi penting.
+Rock_Sign=Mari kita semangat!
+Call_Me=Silakan hubungi untuk diskusi lanjutan.
+Drowsy=Anda tampak mengantuk, Andi. Silakan istirahat.</textarea>
+
+      <div class="admin-section">
+        <h4>🏢 Pengaturan Enterprise</h4>
+        <input type="text" id="apiKeyInput" placeholder="Masukkan API Key untuk Logging">
+        <div class="log-list" id="logList"></div>
+        <button id="exportBtn">📤 Ekspor Laporan CSV</button>
+      </div>
+
+      <div class="status" id="status">
+        Status: Sistem siap digunakan
+      </div>
+      <div class="confidence-bar">
+        <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">Tingkat Keyakinan:</div>
+        <div style="background: #e5e7eb; height: 6px; border-radius: 3px;">
+          <div class="confidence-fill" id="confidenceFill" style="width: 0%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MediaPipe Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+  <script>
+  (async () => {
+    // DOM Elements
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('overlay');
+    const ctx = canvas.getContext('2d');
+    
+    const enableAudioBtn = document.getElementById('enableAudioBtn');
+    const testVoiceBtn = document.getElementById('testVoiceBtn');
+    const startChatBtn = document.getElementById('startChatBtn');
+    const clearChatBtn = document.getElementById('clearChatBtn');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const statusDiv = document.getElementById('status');
+    const overlayInfo = document.getElementById('overlayInfo');
+    const gestureDisplay = document.getElementById('gestureDisplay');
+    const drowsinessAlert = document.getElementById('drowsinessAlert');
+    const mappingTextarea = document.getElementById('mapping');
+    const chatTranscript = document.getElementById('chatTranscript');
+    const micIndicator = document.getElementById('micIndicator');
+    const blinkValue = document.getElementById('blinkValue');
+    const perclosValue = document.getElementById('perclosValue');
+    
+    // Voice and monitoring elements
+    const speechRate = document.getElementById('speechRate');
+    const speechPitch = document.getElementById('speechPitch');
+    const speechVolume = document.getElementById('speechVolume');
+    const drowsyFill = document.getElementById('drowsyFill');
+    const drowsyPercent = document.getElementById('drowsyPercent');
+    const confidenceFill = document.getElementById('confidenceFill');
+    const eyeClosureValue = document.getElementById('eyeClosureValue');
+    const headPoseValue = document.getElementById('headPoseValue');
+    const alertnessValue = document.getElementById('alertnessValue');
+    const yawnValue = document.getElementById('yawnValue');
+    
+    // Enterprise elements
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const logList = document.getElementById('logList');
+    const exportBtn = document.getElementById('exportBtn');
+    
+    // Feature indicators
+    const handDetection = document.getElementById('handDetection');
+    const faceDetection = document.getElementById('faceDetection');
+    const voiceResponse = document.getElementById('voiceResponse');
+    const realTimeProcessing = document.getElementById('realTimeProcessing');
+    const loggingFeature = document.getElementById('loggingFeature');
+    const apiIntegration = document.getElementById('apiIntegration');
+    const voiceChat = document.getElementById('voiceChat');
+    const faceRecognition = document.getElementById('faceRecognition');
+
+    // State variables
+    let voices = [];
+    let audioEnabled = false;
+    let predicting = false;
+    let chatting = false;
+    let handsResults = null;
+    let faceResults = null;
+    let recognition = null;
+
+    // Enhanced gesture recognition variables
+    let lastGesture = null;
+    let gestureConfidence = 0;
+    let gestureStableFrames = 0;
+    let lastGestureTime = 0;
+    let doubleHandData = { left: null, right: null };
+    
+    // Drowsiness detection variables
+    let drowsinessLevel = 0;
+    let eyeClosureFrames = 0;
+    let headPoseFrames = 0;
+    let yawnFrames = 0;
+    let drowsyStableFrames = 0;
+    let lastBlinkTime = 0;
+    let lastDrowsyAlert = 0;
+    let earHistory = [];
+    let mouthAspectHistory = [];
+    let blinkCount = 0;
+    let blinkHistory = [];
+    let perclosWindow = [];
+
+    // Face recognition variables
+    let faceIdentity = 'Tidak Dikenal';
+    let lastFaceRecognitionTime = 0;
+    const FACE_RECOGNITION_COOLDOWN = 5000;
+    const FACE_SIMILARITY_THRESHOLD = 0.9;
+
+    // Profil wajah referensi untuk Andi (nilai contoh, sesuaikan dengan data nyata)
+    const andiFaceProfile = {
+      eyeDistance: 0.15,
+      eyeNoseDistance: 0.12,
+      noseMouthDistance: 0.08,
+      faceWidth: 0.3
+    };
+
+    // Enterprise and chat logs
+    let detectionLogs = [];
+    let apiKey = '';
+
+    // Constants
+    const GESTURE_STABLE_FRAMES = 8;
+    const GESTURE_COOLDOWN = 3000;
+    const DROWSY_COOLDOWN = 12000;
+    const DROWSY_THRESHOLD = 75;
+    const DROWSY_STABLE_FRAMES = 10;
+    const EAR_THRESHOLD = 0.25;
+    const EAR_HISTORY_SIZE = 15;
+    const MAR_THRESHOLD = 0.5;
+    const MAR_HISTORY_SIZE = 15;
+    const BLINK_THRESHOLD = 0.25;
+    const PERCLOS_WINDOW_SIZE = 180;
+    const PERCLOS_THRESHOLD = 20;
+    const LOG_SERVER_URL = 'https://your-enterprise-log-server.com/api/log';
+    const GROK_API_URL = 'https://api.x.ai/grok';
+
+    // Definisi HAND_CONNECTIONS
+    const HAND_CONNECTIONS = [
+      [0, 1], [1, 2], [2, 3], [3, 4],
+      [0, 5], [5, 6], [6, 7], [7, 8],
+      [5, 9], [9, 10], [10, 11], [11, 12],
+      [9, 13], [13, 14], [14, 15], [15, 16],
+      [13, 17], [0, 17], [17, 18], [18, 19], [19, 20]
+    ];
+
+    // Initialize audio
+    function initVoicesAndUnlockAudio() {
+      voices = speechSynthesis.getVoices();
+      const u = new SpeechSynthesisUtterance('');
+      speechSynthesis.speak(u);
+      audioEnabled = true;
+      enableAudioBtn.textContent = '✅ Audio Aktif';
+      enableAudioBtn.classList.remove('btn-warning');
+      enableAudioBtn.classList.add('btn-success');
+      statusDiv.textContent = 'Status: Audio berhasil diaktifkan';
+      statusDiv.className = 'status success';
+      voiceResponse.classList.add('active');
+    }
+
+    enableAudioBtn.addEventListener('click', initVoicesAndUnlockAudio);
+
+    window.speechSynthesis.onvoiceschanged = () => {
+      voices = speechSynthesis.getVoices();
+    };
+
+    // Initialize speech recognition
+    function initSpeechRecognition() {
+      if (!('webkitSpeechRecognition' in window)) {
+        statusDiv.textContent = 'Status: Browser tidak mendukung pengenalan suara';
+        statusDiv.className = 'status warning';
+        return;
+      }
+
+      recognition = new webkitSpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'id-ID';
+
+      recognition.onstart = () => {
+        micIndicator.classList.add('active');
+        statusDiv.textContent = 'Status: Mendengarkan...';
+        statusDiv.className = 'status success';
+        voiceChat.classList.add('active');
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.trim();
+        updateChatTranscript('Pengguna', transcript);
+        logDetection('voice_chat', { question: transcript });
+
+        if (transcript.toLowerCase().startsWith('hai ai') || transcript.toLowerCase().startsWith('hey ai')) {
+          const question = transcript.slice(6).trim();
+          if (question) {
+            processQuestion(question);
+          } else {
+            updateChatTranscript('Asisten', 'Silakan ajukan pertanyaan setelah "Hai AI".');
+            speak('Silakan ajukan pertanyaan setelah "Hai AI".');
+          }
+        } else {
+          updateChatTranscript('Asisten', 'Ucapkan "Hai AI" untuk memulai pertanyaan.');
+          speak('Ucapkan "Hai AI" untuk memulai pertanyaan.');
+        }
+
+        if (chatting) {
+          setTimeout(() => {
+            if (!speechSynthesis.speaking) {
+              recognition.start();
+            }
+          }, 1000);
+        }
+      };
+
+      recognition.onerror = (event) => {
+        statusDiv.textContent = `Status: Error pengenalan suara: ${event.error}`;
+        statusDiv.className = 'status warning';
+        if (chatting) {
+          setTimeout(() => {
+            if (!speechSynthesis.speaking) {
+              recognition.start();
+            }
+          }, 1500);
+        }
+      };
+
+      recognition.onend = () => {
+        micIndicator.classList.remove('active');
+        if (chatting && !speechSynthesis.speaking) {
+          setTimeout(() => {
+            recognition.start();
+          }, 500);
+        }
+      };
+    }
+
+    // Process question with Grok (simulated)
+    async function processQuestion(question) {
+      updateChatTranscript('Asisten', 'Memproses pertanyaan...');
+      statusDiv.textContent = 'Status: Memproses pertanyaan...';
+      statusDiv.className = 'status';
+      
+      try {
+        const response = await simulateGrokResponse(question);
+        updateChatTranscript('Asisten', response);
+        speak(response);
+        logDetection('voice_chat_response', { question, response });
+        statusDiv.textContent = 'Status: Respons selesai';
+        statusDiv.className = 'status success';
+      } catch (error) {
+        updateChatTranscript('Asisten', `Error: ${error.message}`);
+        statusDiv.textContent = `Status: Error memproses pertanyaan: ${error.message}`;
+        statusDiv.className = 'status danger';
+      }
+    }
+
+    // Simulated Grok response
+    async function simulateGrokResponse(question) {
+      const lowerQuestion = question.toLowerCase();
+      const date = new Date();
+      if (lowerQuestion.includes('waktu') || lowerQuestion.includes('jam')) {
+        return `Saat ini adalah ${date.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB pada hari ${date.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.`;
+      } else if (lowerQuestion.includes('cuaca')) {
+        return 'Mohon maaf, saya tidak memiliki akses ke data cuaca real-time. Silakan periksa sumber resmi untuk informasi cuaca.';
+      } else if (lowerQuestion.includes('halo') || lowerQuestion.includes('hai')) {
+        return `Halo${faceIdentity === 'Andi' ? ', Andi' : ''}! Saya adalah asisten AI profesional. Silakan ajukan pertanyaan atau perintah resmi.`;
+      } else if (lowerQuestion.includes('siapa kamu') || lowerQuestion.includes('siapa anda')) {
+        return 'Saya adalah asisten AI yang dikembangkan oleh xAI, dirancang untuk mendukung komunikasi inklusif dan monitoring di lingkungan profesional.';
+      } else {
+        return `Pertanyaan: "${question}". Saya siap membantu${faceIdentity === 'Andi' ? ', Andi' : ''}! Silakan ajukan pertanyaan spesifik terkait waktu, tugas, atau informasi lainnya.`;
+      }
+    }
+
+    // Update chat transcript
+    function updateChatTranscript(speaker, text) {
+      const p = document.createElement('p');
+      p.className = speaker.toLowerCase();
+      const timestamp = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      p.innerHTML = `<span>${speaker}: ${text}</span><span class="timestamp">${timestamp}</span>`;
+      chatTranscript.appendChild(p);
+      chatTranscript.scrollTop = chatTranscript.scrollHeight;
+    }
+
+    // Clear chat history
+    clearChatBtn.addEventListener('click', () => {
+      chatTranscript.innerHTML = '';
+      statusDiv.textContent = 'Status: Riwayat obrolan dihapus';
+      statusDiv.className = 'status';
+    });
+
+    // Start/stop chat
+    startChatBtn.addEventListener('click', () => {
+      if (!chatting) {
+        if (!audioEnabled) {
+          statusDiv.textContent = 'Status: Aktifkan audio terlebih dahulu';
+          statusDiv.className = 'status warning';
+          return;
+        }
+        initSpeechRecognition();
+        recognition.start();
+        chatting = true;
+        startChatBtn.innerHTML = '<span class="mic-indicator active"></span>Hentikan Obrolan Suara';
+        startChatBtn.classList.remove('btn-chat');
+        startChatBtn.classList.add('btn-danger');
+        statusDiv.textContent = 'Status: Mendengarkan...';
+        statusDiv.className = 'status success';
+        voiceChat.classList.add('active');
+      } else {
+        recognition.stop();
+        chatting = false;
+        startChatBtn.innerHTML = '<span class="mic-indicator"></span>Aktifkan Obrolan Suara';
+        startChatBtn.classList.remove('btn-danger');
+        startChatBtn.classList.add('btn-chat');
+        statusDiv.textContent = 'Status: Obrolan suara dihentikan';
+        statusDiv.className = 'status';
+        voiceChat.classList.remove('active');
+      }
+    });
+
+    // Parse mapping configuration
+    function parseMapping() {
+      const lines = mappingTextarea.value.split('\n').map(l => l.trim()).filter(Boolean);
+      const map = {};
+      for (const l of lines) {
+        const i = l.indexOf('=');
+        if (i > 0) {
+          const k = l.slice(0, i).trim();
+          const v = l.slice(i + 1).trim();
+          if (k) map[k] = v;
+        }
+      }
+      return map;
+    }
+
+    // Choose optimal voice
+    function chooseOptimalVoice() {
+      if (!voices || voices.length === 0) return null;
+      
+      const indonesianVoice = voices.find(v => 
+        v.lang && v.lang.toLowerCase().startsWith('id')
+      );
+      if (indonesianVoice) return indonesianVoice;
+      
+      return voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en')) || voices[0];
+    }
+
+    // Enhanced speak function
+    function speak(text) {
+      if (!audioEnabled) {
+        statusDiv.textContent = 'Status: Audio belum diaktifkan';
+        statusDiv.className = 'status warning';
+        return;
+      }
+      
+      if (speechSynthesis.speaking) return;
+      
+      const utter = new SpeechSynthesisUtterance(text);
+      const voice = chooseOptimalVoice();
+      
+      if (voice) utter.voice = voice;
+      utter.lang = voice && voice.lang ? voice.lang : 'id-ID';
+      utter.rate = parseFloat(speechRate.value);
+      utter.pitch = parseFloat(speechPitch.value);
+      utter.volume = parseFloat(speechVolume.value);
+      
+      speechSynthesis.speak(utter);
+      voiceResponse.classList.add('active');
+      setTimeout(() => voiceResponse.classList.remove('active'), 2000);
+      
+      utter.onend = () => {
+        if (chatting && recognition) {
+          setTimeout(() => {
+            recognition.start();
+            micIndicator.classList.add('active');
+            statusDiv.textContent = 'Status: Mendengarkan...';
+            statusDiv.className = 'status success';
+          }, 500);
+        }
+      };
+    }
+
+    testVoiceBtn.addEventListener('click', () => {
+      audioEnabled = true;
+      voices = speechSynthesis.getVoices();
+      speak(`Selamat datang${faceIdentity === 'Andi' ? ', Andi' : ''}! Saya siap membantu dengan pertanyaan dan tugas Anda.`);
+    });
+
+    // Advanced gesture recognition functions
+    function calculateDistance(p1, p2) {
+      return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2);
+    }
+
+    function calculateAngle(p1, p2, p3) {
+      const v1 = { x: p1.x - p2.x, y: p1.y - p2.y };
+      const v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
+      const dot = v1.x * v2.x + v1.y * v2.y;
+      const mag1 = Math.sqrt(v1.x ** 2 + v1.y ** 2);
+      const mag2 = Math.sqrt(v2.x ** 2 + v2.y ** 2);
+      return Math.acos(Math.max(-1, Math.min(1, dot / (mag1 * mag2)))) * (180 / Math.PI);
+    }
+
+    function isFingerExtended(landmarks, tipIdx, pipIdx, mcpIdx = null) {
+      if (!landmarks[tipIdx] || !landmarks[pipIdx]) return false;
+      
+      if (tipIdx === 4) {
+        const wrist = landmarks[0];
+        const tipDist = calculateDistance(landmarks[tipIdx], wrist);
+        const pipDist = calculateDistance(landmarks[pipIdx], wrist);
+        return tipDist > pipDist;
+      }
+      
+      return landmarks[tipIdx].y < landmarks[pipIdx].y;
+    }
+
+    function recognizeGesture(landmarks) {
+      if (!landmarks || landmarks.length < 21) return { gesture: 'Unknown', confidence: 0 };
+
+      const fingerTips = [4, 8, 12, 16, 20];
+      const fingerPips = [3, 6, 10, 14, 18];
+      const fingerMcps = [2, 5, 9, 13, 17];
+
+      const fingersExtended = fingerTips.map((tip, i) => 
+        isFingerExtended(landmarks, tip, fingerPips[i], fingerMcps[i])
+      );
+
+      const extendedCount = fingersExtended.filter(Boolean).length;
+      
+      let gesture = 'Unknown';
+      let confidence = 0;
+
+      if (extendedCount >= 4 && fingersExtended.slice(1).every(Boolean)) {
+        gesture = 'Open_Palm';
+        confidence = 0.9;
+      } else if (fingersExtended[0] && extendedCount === 1) {
+        if (landmarks[4].y < landmarks[2].y) {
+          gesture = 'Thumbs_Up';
+          confidence = 0.85;
+        }
+      } else if (fingersExtended[0] && extendedCount === 1) {
+        if (landmarks[4].y > landmarks[2].y) {
+          gesture = 'Thumbs_Down';
+          confidence = 0.85;
+        }
+      } else if (!fingersExtended[0] && fingersExtended[1] && fingersExtended[2] && !fingersExtended[3] && !fingersExtended[4]) {
+        gesture = 'Peace_Sign';
+        confidence = 0.8;
+      } else if (fingersExtended[0] && fingersExtended[1]) {
+        const distance = calculateDistance(landmarks[4], landmarks[8]);
+        if (distance < 0.08) {
+          gesture = 'OK_Sign';
+          confidence = 0.75;
+        }
+      } else if (extendedCount <= 1) {
+        gesture = 'Fist';
+        confidence = 0.85;
+      } else if (extendedCount >= 4) {
+        const palmNormal = calculatePalmNormal(landmarks);
+        if (palmNormal.z < -0.1) {
+          gesture = 'Stop_Hand';
+          confidence = 0.7;
+        }
+      } else if (!fingersExtended[0] && fingersExtended[1] && !fingersExtended[2] && !fingersExtended[3] && !fingersExtended[4]) {
+        if (landmarks[8].y < landmarks[6].y) {
+          gesture = 'Point_Up';
+          confidence = 0.8;
+        }
+      } else if (!fingersExtended[0] && fingersExtended[1] && !fingersExtended[2] && !fingersExtended[3] && fingersExtended[4]) {
+        gesture = 'Rock_Sign';
+        confidence = 0.8;
+      } else if (fingersExtended[0] && !fingersExtended[1] && !fingersExtended[2] && !fingersExtended[3] && fingersExtended[4]) {
+        gesture = 'Call_Me';
+        confidence = 0.8;
+      }
+
+      return { gesture, confidence };
+    }
+
+    function calculatePalmNormal(landmarks) {
+      const wrist = landmarks[0];
+      const thumb = landmarks[4];
+      const pinky = landmarks[20];
+      
+      const v1 = { x: thumb.x - wrist.x, y: thumb.y - wrist.y, z: thumb.z - wrist.z };
+      const v2 = { x: pinky.x - wrist.x, y: pinky.y - wrist.y, z: pinky.z - wrist.z };
+      
+      return {
+        x: v1.y * v2.z - v1.z * v2.y,
+        y: v1.z * v2.x - v1.x * v2.z,
+        z: v1.x * v2.y - v1.y * v2.x
+      };
+    }
+
+    function recognizeDoubleHandGesture(leftHand, rightHand) {
+      if (!leftHand || !rightHand) return { gesture: 'Unknown', confidence: 0 };
+
+      const leftPalm = leftHand[9];
+      const rightPalm = rightHand[9];
+      const distance = calculateDistance(leftPalm, rightPalm);
+
+      if (distance < 0.15) {
+        return { gesture: 'Clap', confidence: 0.8 };
+      }
+
+      if (distance < 0.12) {
+        const leftMiddle = leftHand[12];
+        const rightMiddle = rightHand[12];
+        if (leftMiddle.y < leftPalm.y && rightMiddle.y < rightPalm.y) {
+          return { gesture: 'Prayer', confidence: 0.75 };
+        }
+      }
+
+      return { gesture: 'Unknown', confidence: 0 };
+    }
+
+    // Face recognition functions
+    function calculateFaceProfile(landmarks) {
+      try {
+        const leftEye = landmarks[33];
+        const rightEye = landmarks[362];
+        const nose = landmarks[1];
+        const mouthTop = landmarks[0];
+        const mouthBottom = landmarks[17];
+        const leftCheek = landmarks[234];
+        const rightCheek = landmarks[454];
+
+        const eyeDistance = calculateDistance(leftEye, rightEye);
+        const eyeNoseDistance = (calculateDistance(leftEye, nose) + calculateDistance(rightEye, nose)) / 2;
+        const noseMouthDistance = calculateDistance(nose, mouthBottom);
+        const faceWidth = calculateDistance(leftCheek, rightCheek);
+
+        return {
+          eyeDistance,
+          eyeNoseDistance,
+          noseMouthDistance,
+          faceWidth
+        };
+      } catch (error) {
+        console.error('Face profile calculation error:', error);
+        return null;
+      }
+    }
+
+    function recognizeFace(landmarks) {
+      const currentProfile = calculateFaceProfile(landmarks);
+      if (!currentProfile) return { identity: 'Tidak Dikenal', similarity: 0 };
+
+      const now = Date.now();
+      if (now - lastFaceRecognitionTime < FACE_RECOGNITION_COOLDOWN) {
+        return { identity: faceIdentity, similarity: 1 };
+      }
+
+      const metrics = ['eyeDistance', 'eyeNoseDistance', 'noseMouthDistance', 'faceWidth'];
+      let similaritySum = 0;
+      let count = 0;
+
+      metrics.forEach(metric => {
+        const refValue = andiFaceProfile[metric];
+        const currValue = currentProfile[metric];
+        if (refValue && currValue) {
+          const diff = Math.abs(refValue - currValue) / refValue;
+          similaritySum += 1 - diff;
+          count++;
+        }
+      });
+
+      const similarity = count > 0 ? similaritySum / count : 0;
+
+      if (similarity > FACE_SIMILARITY_THRESHOLD) {
+        lastFaceRecognitionTime = now;
+        faceIdentity = 'Andi';
+        faceRecognition.classList.add('active');
+        return { identity: 'Andi', similarity };
+      } else {
+        faceIdentity = 'Tidak Dikenal';
+        faceRecognition.classList.remove('active');
+        return { identity: 'Tidak Dikenal', similarity };
+      }
+    }
+
+    function calculateEAR(landmarks) {
+      const leftEye = [159, 33, 133, 145, 153, 144];
+      const rightEye = [386, 362, 263, 374, 380, 373];
+
+      function euclideanDistance(p1, p2) {
+        return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+      }
+
+      try {
+        const leftVertical1 = euclideanDistance(landmarks[leftEye[1]], landmarks[leftEye[4]]);
+        const leftVertical2 = euclideanDistance(landmarks[leftEye[2]], landmarks[leftEye[5]]);
+        const leftHorizontal = euclideanDistance(landmarks[leftEye[0]], landmarks[leftEye[3]]);
+        const leftEAR = (leftVertical1 + leftVertical2) / (2 * leftHorizontal);
+
+        const rightVertical1 = euclideanDistance(landmarks[rightEye[1]], landmarks[rightEye[4]]);
+        const rightVertical2 = euclideanDistance(landmarks[rightEye[2]], landmarks[rightEye[5]]);
+        const rightHorizontal = euclideanDistance(landmarks[rightEye[0]], landmarks[rightEye[3]]);
+        const rightEAR = (rightVertical1 + rightVertical2) / (2 * rightHorizontal);
+
+        return (leftEAR + rightEAR) / 2;
+      } catch (error) {
+        console.error('EAR calculation error:', error);
+        return 0.3;
+      }
+    }
+
+    function calculateMAR(landmarks) {
+      const mouth = [61, 291, 0, 17, 84, 314];
+      function euclideanDistance(p1, p2) {
+        return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+      }
+
+      try {
+        const vertical1 = euclideanDistance(landmarks[mouth[0]], landmarks[mouth[3]]);
+        const vertical2 = euclideanDistance(landmarks[mouth[1]], landmarks[mouth[4]]);
+        const horizontal = euclideanDistance(landmarks[mouth[2]], landmarks[mouth[5]]);
+        return (vertical1 + vertical2) / (2 * horizontal);
+      } catch (error) {
+        console.error('MAR calculation error:', error);
+        return 0.2;
+      }
+    }
+
+    function detectHeadPose(landmarks) {
+      try {
+        const nose = landmarks[1];
+        const leftEye = landmarks[33];
+        const rightEye = landmarks[362];
+        
+        const eyeCenter = {
+          x: (leftEye.x + rightEye.x) / 2,
+          y: (leftEye.y + rightEye.y) / 2
+        };
+
+        const headTilt = Math.abs(nose.x - eyeCenter.x);
+        return headTilt > 0.06 ? 'Tilted' : 'Normal';
+      } catch (error) {
+        console.error('Head pose detection error:', error);
+        return 'Normal';
+      }
+    }
+
+    function updateDrowsinessLevel(ear, mar, headPose) {
+      earHistory.push(ear);
+      if (earHistory.length > EAR_HISTORY_SIZE) {
+        earHistory.shift();
+      }
+
+      mouthAspectHistory.push(mar);
+      if (mouthAspectHistory.length > MAR_HISTORY_SIZE) {
+        mouthAspectHistory.shift();
+      }
+
+      const isClosed = ear < BLINK_THRESHOLD;
+      if (isClosed && lastBlinkTime === 0) {
+        lastBlinkTime = Date.now();
+      } else if (!isClosed && lastBlinkTime > 0) {
+        const blinkDuration = Date.now() - lastBlinkTime;
+        if (blinkDuration > 100 && blinkDuration < 400) {
+          blinkCount++;
+        }
+        lastBlinkTime = 0;
+      }
+
+      blinkHistory.push(isClosed ? 1 : 0);
+      if (blinkHistory.length > 60) {
+        blinkHistory.shift();
+      }
+
+      perclosWindow.push(isClosed ? 1 : 0);
+      if (perclosWindow.length > PERCLOS_WINDOW_SIZE) {
+        perclosWindow.shift();
+      }
+      const perclos = (perclosWindow.reduce((a, b) => a + b, 0) / PERCLOS_WINDOW_SIZE) * 100;
+
+      if (ear < EAR_THRESHOLD) {
+        eyeClosureFrames++;
+      } else {
+        eyeClosureFrames = Math.max(0, eyeClosureFrames - 2);
+      }
+
+      if (mar > MAR_THRESHOLD) {
+        yawnFrames++;
+      } else {
+        yawnFrames = Math.max(0, yawnFrames - 1);
+      }
+
+      if (headPose === 'Tilted') {
+        headPoseFrames++;
+      } else {
+        headPoseFrames = Math.max(0, headPoseFrames - 1);
+      }
+
+      let drowsinessScore = 0;
+      
+      drowsinessScore += (eyeClosureFrames / 40) * 30;
+      drowsinessScore += (headPoseFrames / 30) * 20;
+      drowsinessScore += (yawnFrames / 20) * 20;
+      drowsinessScore += (blinkCount / 10) * 10;
+      drowsinessScore += (perclos / PERCLOS_THRESHOLD) * 20;
+
+      if (earHistory.length > 0) {
+        const avgEAR = earHistory.reduce((a, b) => a + b, 0) / earHistory.length;
+        if (avgEAR < EAR_THRESHOLD) {
+          drowsinessScore += 10;
+        }
+      }
+
+      if (mouthAspectHistory.length > 0) {
+        const avgMAR = mouthAspectHistory.reduce((a, b) => a + b, 0) / mouthAspectHistory.length;
+        if (avgMAR > MAR_THRESHOLD) {
+          drowsinessScore += 10;
+        }
+      }
+
+      drowsinessLevel = Math.min(100, Math.max(0, drowsinessScore));
+      
+      if (drowsinessLevel > DROWSY_THRESHOLD) {
+        drowsyStableFrames++;
+      } else {
+        drowsyStableFrames = 0;
+      }
+
+      drowsyFill.style.width = `${drowsinessLevel}%`;
+      drowsyPercent.textContent = `${Math.round(drowsinessLevel)}%`;
+      eyeClosureValue.textContent = eyeClosureFrames;
+      headPoseValue.textContent = headPose;
+      yawnValue.textContent = yawnFrames;
+      blinkValue.textContent = blinkCount;
+      perclosValue.textContent = `${Math.round(perclos)}%`;
+      
+      let alertness = 'Tinggi';
+      if (drowsinessLevel > 80) alertness = 'Rendah';
+      else if (drowsinessLevel > 50) alertness = 'Sedang';
+      alertnessValue.textContent = alertness;
+    }
+
+    // Fungsi logging enterprise
+    function logDetection(type, data) {
+      const timestamp = new Date().toISOString();
+      const logEntry = { timestamp, type, data, identity: faceIdentity };
+      detectionLogs.push(logEntry);
+      
+      const logItem = document.createElement('div');
+      logItem.className = 'log-item';
+      logItem.textContent = `[${timestamp}] ${type}: ${JSON.stringify({ ...data, identity: faceIdentity })}`;
+      logList.appendChild(logItem);
+      logList.scrollTop = logList.scrollHeight;
+      
+      apiKey = apiKeyInput.value.trim();
+      if (apiKey && /^[a-zA-Z0-9\-_]{32,}$/.test(apiKey)) {
+        fetch(LOG_SERVER_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify(logEntry)
+        }).catch(error => {
+          console.error('Logging error:', error);
+          statusDiv.textContent = 'Status: Error mengirim log ke server';
+          statusDiv.className = 'status warning';
+        });
+      }
+    }
+
+    // Ekspor CSV
+    function exportLogs() {
+      if (detectionLogs.length === 0) {
+        statusDiv.textContent = 'Status: Tidak ada log untuk diekspor';
+        statusDiv.className = 'status warning';
+        return;
+      }
+      
+      let csv = 'Timestamp,Type,Identity,Data\n';
+      detectionLogs.forEach(log => {
+        csv += `${log.timestamp},${log.type},${log.identity},"${JSON.stringify(log.data).replace(/"/g, '""')}"\n`;
+      });
+      
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `logs_${new Date().toISOString().replace(/[:.]/g, '-')}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    exportBtn.addEventListener('click', exportLogs);
+
+    // MediaPipe setup
+    const hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+    
+    hands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.7
+    });
+    
+    hands.onResults((results) => {
+      handsResults = results;
+      processResults();
+    });
+
+    const faceMesh = new FaceMesh({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+    });
+    
+    faceMesh.setOptions({
+      maxNumFaces: 1,
+      refineLandmarks: true,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.6
+    });
+    
+    faceMesh.onResults((results) => {
+      faceResults = results;
+      processResults();
+    });
+
+    // Camera setup
+    const cam = new Camera(video, {
+      onFrame: async () => {
+        await hands.send({ image: video });
+        await faceMesh.send({ image: video });
+        realTimeProcessing.classList.add('active');
+        setTimeout(() => realTimeProcessing.classList.remove('active'), 100);
+      },
+      width: 640,
+      height: 480
+    });
+
+    try {
+      await cam.start();
+      overlayInfo.textContent = 'Kamera aktif - Siap mendeteksi';
+    } catch (error) {
+      overlayInfo.textContent = 'Error: Tidak dapat mengakses kamera';
+      console.error('Camera error:', error);
+      statusDiv.textContent = 'Status: Error mengakses kamera';
+      statusDiv.className = 'status danger';
+    }
+
+    // Control events
+    startBtn.addEventListener('click', () => {
+      predicting = true;
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      statusDiv.textContent = 'Status: Deteksi aktif - Menunggu gerakan';
+      statusDiv.className = 'status success';
+      overlayInfo.classList.add('detecting');
+      handDetection.classList.add('active');
+      faceDetection.classList.add('active');
+      loggingFeature.classList.add('active');
+      apiIntegration.classList.add('active');
+    });
+
+    stopBtn.addEventListener('click', () => {
+      predicting = false;
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      statusDiv.textContent = 'Status: Deteksi dihentikan';
+      statusDiv.className = 'status';
+      overlayInfo.classList.remove('detecting');
+      handDetection.classList.remove('active');
+      faceDetection.classList.remove('active');
+      faceRecognition.classList.remove('active');
+      loggingFeature.classList.remove('active');
+      apiIntegration.classList.remove('active');
+      drowsinessAlert.style.display = 'none';
+      
+      gestureDisplay.textContent = 'Tidak Ada Gerakan';
+      gestureDisplay.classList.remove('active');
+      
+      document.querySelectorAll('.gesture-item.detected').forEach(item => {
+        item.classList.remove('detected');
+      });
+    });
+
+    // Main processing function
+    function processResults() {
+      if (!handsResults && !faceResults) return;
+      
+      ctx.save();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      if (handsResults && handsResults.image) {
+        ctx.drawImage(handsResults.image, 0, 0, canvas.width, canvas.height);
+      } else if (faceResults && faceResults.image) {
+        ctx.drawImage(faceResults.image, 0, 0, canvas.width, canvas.height);
+      }
+
+      let detectionInfo = [];
+      let currentGesture = 'Unknown';
+      let currentConfidence = 0;
+
+      if (handsResults && handsResults.multiHandLandmarks && handsResults.multiHandLandmarks.length > 0) {
+        doubleHandData = { left: null, right: null };
+        
+        for (let i = 0; i < handsResults.multiHandLandmarks.length; i++) {
+          const landmarks = handsResults.multiHandLandmarks[i];
+          
+          drawConnectors(ctx, landmarks, HAND_CONNECTIONS, { color: '#047857', lineWidth: 2 });
+          drawLandmarks(ctx, landmarks, { color: '#b91c1c', lineWidth: 1, radius: 2 });
+
+          let label = 'Unknown';
+          if (handsResults.multiHandedness && handsResults.multiHandedness[i] && handsResults.multiHandedness[i].label) {
+            label = handsResults.multiHandedness[i].label;
+          }
+
+          if (label === 'Left') doubleHandData.left = landmarks;
+          if (label === 'Right') doubleHandData.right = landmarks;
+
+          detectionInfo.push(`${label} Hand`);
+
+          if (predicting) {
+            const gestureResult = recognizeGesture(landmarks);
+            if (gestureResult.confidence > currentConfidence) {
+              currentGesture = gestureResult.gesture;
+              currentConfidence = gestureResult.confidence;
+            }
+          }
+
+          const wrist = landmarks[0];
+          const x = wrist.x * canvas.width;
+          const y = wrist.y * canvas.height;
+          
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.fillRect(x + 5, y - 20, 70, 18);
+          ctx.fillStyle = '#111827';
+          ctx.font = 'bold 12px Inter';
+          ctx.fillText(`${label} Hand`, x + 8, y - 8);
+        }
+
+        if (predicting && doubleHandData.left && doubleHandData.right) {
+          const doubleGestureResult = recognizeDoubleHandGesture(doubleHandData.left, doubleHandData.right);
+          if (doubleGestureResult.confidence > currentConfidence) {
+            currentGesture = doubleGestureResult.gesture;
+            currentConfidence = doubleGestureResult.confidence;
+          }
+        }
+      }
+
+      if (faceResults && faceResults.multiFaceLandmarks && faceResults.multiFaceLandmarks.length > 0) {
+        const landmarks = faceResults.multiFaceLandmarks[0];
+        
+        ctx.fillStyle = '#047857';
+        landmarks.forEach(landmark => {
+          ctx.beginPath();
+          ctx.arc(landmark.x * canvas.width, landmark.y * canvas.height, 1, 0, 2 * Math.PI);
+          ctx.fill();
+        });
+
+        if (predicting) {
+          const faceResult = recognizeFace(landmarks);
+          detectionInfo.push(`Wajah: ${faceResult.identity}`);
+          logDetection('face_recognition', { identity: faceResult.identity, similarity: faceResult.similarity });
+
+          const ear = calculateEAR(landmarks);
+          const mar = calculateMAR(landmarks);
+          const headPose = detectHeadPose(landmarks);
+          updateDrowsinessLevel(ear, mar, headPose);
+
+          const now = Date.now();
+          if (drowsinessLevel > DROWSY_THRESHOLD && 
+              drowsyStableFrames >= DROWSY_STABLE_FRAMES && 
+              (now - lastDrowsyAlert) > DROWSY_COOLDOWN) {
+            lastDrowsyAlert = now;
+            drowsyStableFrames = 0;
+            
+            const map = parseMapping();
+            const phrase = map['Drowsy'] || `Anda tampak mengantuk${faceIdentity === 'Andi' ? ', Andi' : ''}. Silakan istirahat.`;
+            
+            if (audioEnabled && !speechSynthesis.speaking) {
+              speak(phrase);
+              statusDiv.textContent = `Status: ⚠️ Peringatan kantuk terdeteksi${faceIdentity === 'Andi' ? ' untuk Andi' : ''}`;
+              statusDiv.className = 'status danger';
+              
+              drowsinessAlert.style.display = 'block';
+              setTimeout(() => {
+                drowsinessAlert.style.display = 'none';
+              }, 4000);
+            }
+            
+            logDetection('drowsiness', { level: drowsinessLevel, ear, mar, headPose, identity: faceIdentity });
+          }
+        }
+      }
+
+      if (predicting && currentGesture !== 'Unknown' && currentConfidence > 0.6) {
+        if (currentGesture !== lastGesture) {
+          gestureStableFrames = 1;
+          lastGesture = currentGesture;
+        } else {
+          gestureStableFrames++;
+        }
+
+        if (gestureStableFrames >= GESTURE_STABLE_FRAMES) {
+          const now = Date.now();
+          if ((now - lastGestureTime) > GESTURE_COOLDOWN) {
+            lastGestureTime = now;
+            
+            gestureDisplay.textContent = currentGesture.replace('_', ' ');
+            gestureDisplay.classList.add('active');
+            setTimeout(() => gestureDisplay.classList.remove('active'), 1500);
+            
+            document.querySelectorAll('.gesture-item').forEach(item => {
+              item.classList.remove('detected');
+            });
+            const gestureItem = document.querySelector(`[data-gesture="${currentGesture}"]`);
+            if (gestureItem) {
+              gestureItem.classList.add('detected');
+              setTimeout(() => gestureItem.classList.remove('detected'), 2000);
+            }
+            
+            const map = parseMapping();
+            const phrase = map[currentGesture] || `Gerakan ${currentGesture.replace('_', ' ')} terdeteksi${faceIdentity === 'Andi' ? ', Andi' : ''}.`;
+            
+            if (audioEnabled && !speechSynthesis.speaking) {
+              speak(phrase);
+              statusDiv.textContent = `Status: Merespons gerakan ${currentGesture.replace('_', ' ')}${faceIdentity === 'Andi' ? ' untuk Andi' : ''}`;
+              statusDiv.className = 'status success';
+            }
+            
+            logDetection('gesture', { gesture: currentGesture, confidence: currentConfidence, identity: faceIdentity });
+          }
+        }
+      } else {
+        gestureStableFrames = 0;
+        if (!predicting || currentGesture === 'Unknown') {
+          gestureDisplay.textContent = 'Tidak Ada Gerakan';
+          gestureDisplay.classList.remove('active');
+        }
+      }
+
+      confidenceFill.style.width = `${Math.max(currentConfidence * 100, drowsinessLevel)}%`;
+      overlayInfo.textContent = detectionInfo.length > 0 ? detectionInfo.join(' | ') : 'Tidak ada deteksi';
+      
+      ctx.restore();
+    }
+  })();
+  </script>
+</body>
+</html>
